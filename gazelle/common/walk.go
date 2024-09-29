@@ -3,7 +3,7 @@ package gazelle
 import (
 	"path/filepath"
 
-	BazelLog "aspect.build/cli/pkg/logger"
+	BazelLog "aspect.build/gazelle/internal/logger"
 	"github.com/bazelbuild/bazel-gazelle/language"
 )
 

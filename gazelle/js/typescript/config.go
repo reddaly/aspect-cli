@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	node "aspect.build/cli/gazelle/js/node"
-	pnpm "aspect.build/cli/gazelle/js/pnpm"
+	node "aspect.build/gazelle/gazelle/js/node"
+	pnpm "aspect.build/gazelle/gazelle/js/pnpm"
 )
 
 type workspacePath struct {

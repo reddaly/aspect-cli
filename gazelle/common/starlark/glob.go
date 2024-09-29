@@ -22,8 +22,8 @@ import (
 	// is necessary to match the behaviour from Bazel.
 	"github.com/yargevad/filepathx"
 
-	common "aspect.build/cli/gazelle/common"
-	BazelLog "aspect.build/cli/pkg/logger"
+	common "aspect.build/gazelle/gazelle/common"
+	BazelLog "aspect.build/gazelle/internal/logger"
 	"github.com/bazelbuild/bazel-gazelle/config"
 	bzl "github.com/bazelbuild/buildtools/build"
 )

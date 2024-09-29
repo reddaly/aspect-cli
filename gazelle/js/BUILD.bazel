@@ -18,7 +18,7 @@ go_library(
         "resolve.go",
         "target.go",
     ],
-    importpath = "aspect.build/cli/gazelle/js",
+    importpath = "aspect.build/gazelle/gazelle/js",
     visibility = ["//visibility:public"],
     deps = [
         "//gazelle/common",

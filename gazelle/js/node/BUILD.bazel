@@ -10,7 +10,7 @@ go_library(
         "std_modules.go",
         "std_modules_list.go",
     ],
-    importpath = "aspect.build/cli/gazelle/js/node",
+    importpath = "aspect.build/gazelle/gazelle/js/node",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/logger",

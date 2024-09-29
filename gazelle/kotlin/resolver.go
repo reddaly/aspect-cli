@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	common "aspect.build/cli/gazelle/common"
-	"aspect.build/cli/gazelle/kotlin/kotlinconfig"
-	BazelLog "aspect.build/cli/pkg/logger"
+	common "aspect.build/gazelle/gazelle/common"
+	"aspect.build/gazelle/gazelle/kotlin/kotlinconfig"
+	BazelLog "aspect.build/gazelle/internal/logger"
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/repo"

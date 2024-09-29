@@ -7,7 +7,7 @@ go_library(
         "lib.go",
         "util.go",
     ],
-    importpath = "aspect.build/cli/gazelle/common/starlark/utils",
+    importpath = "aspect.build/gazelle/gazelle/common/starlark/utils",
     visibility = ["//visibility:public"],
     deps = [
         "@net_starlark_go//starlark",

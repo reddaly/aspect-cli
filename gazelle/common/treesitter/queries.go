@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	BazelLog "aspect.build/cli/pkg/logger"
+	BazelLog "aspect.build/gazelle/internal/logger"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )

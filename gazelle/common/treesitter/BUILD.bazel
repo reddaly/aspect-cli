@@ -8,7 +8,7 @@ go_library(
         "queries.go",
         "traversal.go",
     ],
-    importpath = "aspect.build/cli/gazelle/common/treesitter",
+    importpath = "aspect.build/gazelle/gazelle/common/treesitter",
     visibility = ["//visibility:public"],
     deps = [
         "//gazelle/common/treesitter/grammars/json",

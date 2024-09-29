@@ -3,10 +3,10 @@ package gazelle
 import (
 	"flag"
 
-	common "aspect.build/cli/gazelle/common"
-	"aspect.build/cli/gazelle/common/git"
-	"aspect.build/cli/gazelle/kotlin/kotlinconfig"
-	BazelLog "aspect.build/cli/pkg/logger"
+	common "aspect.build/gazelle/gazelle/common"
+	"aspect.build/gazelle/gazelle/common/git"
+	"aspect.build/gazelle/gazelle/kotlin/kotlinconfig"
+	BazelLog "aspect.build/gazelle/internal/logger"
 	jvm_javaconfig "github.com/bazel-contrib/rules_jvm/java/gazelle/javaconfig"
 	jvm_maven "github.com/bazel-contrib/rules_jvm/java/gazelle/private/maven"
 	"github.com/bazelbuild/bazel-gazelle/config"

@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	common "aspect.build/cli/gazelle/common"
+	common "aspect.build/gazelle/gazelle/common"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/emirpasic/gods/maps/linkedhashmap"

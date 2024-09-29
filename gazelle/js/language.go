@@ -1,8 +1,8 @@
 package gazelle
 
 import (
-	pnpm "aspect.build/cli/gazelle/js/pnpm"
-	"aspect.build/cli/gazelle/js/typescript"
+	pnpm "aspect.build/gazelle/gazelle/js/pnpm"
+	"aspect.build/gazelle/gazelle/js/typescript"
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 )
