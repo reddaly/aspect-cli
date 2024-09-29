@@ -6,8 +6,8 @@ go_library(
     importpath = "aspect.build/gazelle/gazelle/js/proto",
     visibility = ["//visibility:public"],
     deps = [
-        "@bazel_gazelle//language:go_default_library",
-        "@bazel_gazelle//language/proto:go_default_library",
-        "@bazel_gazelle//rule:go_default_library",
+        "@gazelle//language:go_default_library",
+        "@gazelle//language/proto:go_default_library",
+        "@gazelle//rule:go_default_library",
     ],
 )

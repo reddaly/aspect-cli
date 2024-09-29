@@ -11,7 +11,7 @@ go_library(
     deps = [
         "//gazelle/js/node",
         "//gazelle/js/pnpm",
-        "//pkg/logger",
+        "//internal/logger",
         "@com_github_msolo_jsonr//:jsonr",
     ],
 )

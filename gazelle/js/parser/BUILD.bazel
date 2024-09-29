@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//gazelle/common/treesitter",
-        "//pkg/logger",
+        "//internal/logger",
         "@com_github_smacker_go_tree_sitter//:go-tree-sitter",
     ],
 )

@@ -6,9 +6,9 @@ go_library(
     importpath = "aspect.build/gazelle/gazelle/common/git",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/logger",
-        "@bazel_gazelle//config:go_default_library",
+        "//internal/logger",
         "@com_github_go_git_go_git_v5//plumbing/format/gitignore",
+        "@gazelle//config:go_default_library",
     ],
 )
 
@@ -16,5 +16,5 @@ go_test(
     name = "git_test",
     srcs = ["gitignore_test.go"],
     embed = [":git"],
-    deps = ["@bazel_gazelle//config:go_default_library"],
+    deps = ["@gazelle//config:go_default_library"],
 )

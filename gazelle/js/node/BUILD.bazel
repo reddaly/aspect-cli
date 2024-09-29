@@ -13,7 +13,7 @@ go_library(
     importpath = "aspect.build/gazelle/gazelle/js/node",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/logger",
+        "//internal/logger",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_msolo_jsonr//:jsonr",
     ],

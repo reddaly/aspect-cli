@@ -13,12 +13,12 @@ go_library(
     importpath = "aspect.build/gazelle/gazelle/common",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/logger",
-        "@bazel_gazelle//config:go_default_library",
-        "@bazel_gazelle//label:go_default_library",
-        "@bazel_gazelle//language:go_default_library",
-        "@bazel_gazelle//rule:go_default_library",
+        "//internal/logger",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
+        "@gazelle//config:go_default_library",
+        "@gazelle//label:go_default_library",
+        "@gazelle//language:go_default_library",
+        "@gazelle//rule:go_default_library",
     ],
 )
