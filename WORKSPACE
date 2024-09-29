@@ -217,7 +217,7 @@ load("@rules_python//gazelle:deps.bzl", "python_stdlib_list_deps")
 
 python_stdlib_list_deps()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@gazelle//:deps.bzl", "gazelle_dependencies")
 load("//:go.bzl", _go_repositories = "deps")
 
 # gazelle:repository_macro go.bzl%deps

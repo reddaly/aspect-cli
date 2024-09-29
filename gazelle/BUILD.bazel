@@ -4,5 +4,5 @@ bzl_library(
     name = "gazelle",
     srcs = ["gazelle.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["@bazel_gazelle//:def"],
+    deps = ["@gazelle//:def"],
 )

@@ -1,4 +1,4 @@
-load("@bazel_gazelle//:def.bzl", "gazelle_binary")
+load("@gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("//gazelle:gazelle.bzl", "gazelle_generation_test")
 
@@ -24,7 +24,7 @@ go_library(
 gazelle_binary(
     name = "gazelle_bzl_binary",
     languages = [
-        "@bazel_gazelle//language/proto:go_default_library",
+        "@gazelle//language/proto:go_default_library",
         ":bzl",
     ],
     visibility = ["//visibility:private"],

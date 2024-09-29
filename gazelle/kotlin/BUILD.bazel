@@ -1,4 +1,4 @@
-load("@bazel_gazelle//:def.bzl", "gazelle_binary")
+load("@gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("//gazelle:gazelle.bzl", "gazelle_generation_test")
 

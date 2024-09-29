@@ -1,6 +1,6 @@
 "This file managed by `bazel run //:gazelle_update_repos`"
 
-load("@bazel_gazelle//:deps.bzl", "go_repository")
+load("@gazelle//:deps.bzl", "go_repository")
 
 def deps():
     "Fetch go dependencies"
