@@ -1,5 +1,0 @@
-gitignore_excludes: true
-doublestar: true
-exclude:
-  - .circleci/config.yml
-  - gazelle/js/tests/**/*.yaml
