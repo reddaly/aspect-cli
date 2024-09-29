@@ -22,22 +22,14 @@ import (
 	"log"
 	"path"
 
-	"aspect.build/gazelle/gazelle/common/treesitter/grammars/json"
 	"aspect.build/gazelle/gazelle/common/treesitter/grammars/kotlin"
-	"aspect.build/gazelle/gazelle/common/treesitter/grammars/starlark"
-	"aspect.build/gazelle/gazelle/common/treesitter/grammars/tsx"
-	"aspect.build/gazelle/gazelle/common/treesitter/grammars/typescript"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
 type LanguageGrammar string
 
 const (
-	Kotlin      LanguageGrammar = "kotlin"
-	Starlark                    = "starlark"
-	Typescript                  = "typescript"
-	TypescriptX                 = "tsx"
-	JSON                        = "json"
+	Kotlin LanguageGrammar = "kotlin"
 )
 
 type ASTQueryResult interface {
@@ -69,16 +61,8 @@ func (tree TreeAst) String() string {
 
 func toSitterLanguage(lang LanguageGrammar) *sitter.Language {
 	switch lang {
-	case JSON:
-		return json.GetLanguage()
 	case Kotlin:
 		return kotlin.GetLanguage()
-	case Starlark:
-		return starlark.GetLanguage()
-	case Typescript:
-		return typescript.GetLanguage()
-	case TypescriptX:
-		return tsx.GetLanguage()
 	}
 
 	log.Panicf("Unknown LanguageGrammar %q", lang)
@@ -92,20 +76,6 @@ func PathToLanguage(p string) LanguageGrammar {
 var EXT_LANGUAGES = map[string]LanguageGrammar{
 	"kt":  Kotlin,
 	"kts": Kotlin,
-
-	"bzl": Starlark,
-
-	"ts":  Typescript,
-	"cts": Typescript,
-	"mts": Typescript,
-	"js":  Typescript,
-	"mjs": Typescript,
-	"cjs": Typescript,
-
-	"tsx": TypescriptX,
-	"jsx": TypescriptX,
-
-	"json": JSON,
 }
 
 // In theory, this is a mirror of
