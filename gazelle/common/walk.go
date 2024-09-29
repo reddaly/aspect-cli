@@ -1,6 +1,7 @@
 package gazelle
 
 import (
+	"path"
 	"path/filepath"
 
 	BazelLog "aspect.build/gazelle/internal/logger"
@@ -14,13 +15,18 @@ const ASPECT_WALKSUBDIR = "__aspect:walksubdir"
 
 // Walk the directory of the language.GenerateArgs, optionally recursing into
 // subdirectories unlike the files provided in GenerateArgs.RegularFiles.
-func GazelleWalkDir(args language.GenerateArgs, walkFunc GazelleWalkFunc) error {
+func GazelleWalkDir(args language.GenerateArgs, isIgnored func(path string) bool, walkFunc GazelleWalkFunc) error {
 	BazelLog.Tracef("GazelleWalkDir: %s", args.Rel)
 
 	// Source files in the primary directory
 	for _, f := range args.RegularFiles {
 		// Skip BUILD files
 		if args.Config.IsValidBuildFileName(f) {
+			continue
+		}
+
+		if isIgnored(path.Join(args.Rel, f)) {
+			BazelLog.Tracef("File ignored: %s / %s", args.Rel, f)
 			continue
 		}
 

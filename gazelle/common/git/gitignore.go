@@ -36,7 +36,7 @@ func CollectIgnoreFiles(c *config.Config, rel string) {
 	if ignoreErr == nil {
 		BazelLog.Tracef("Add ignore file %s/.gitignore", rel)
 		defer ignoreReader.Close()
-		addIgnore(c, rel, ignoreReader)
+		addIgnore(c, rel, ignoreFilePath, ignoreReader)
 	} else if !os.IsNotExist(ignoreErr) {
 		BazelLog.Errorf("Failed to open %s/.gitignore: %v", rel, ignoreErr)
 	}
@@ -51,12 +51,24 @@ func EnableGitignore(c *config.Config, enabled bool) {
 	}
 }
 
+// Returns a function stored in config.Config.Exts that determines whether
+// a file is gitignored. If the gitignore directive is disabled, the
+// returned function always returns false.
+func GetIgnoreFunction(c *config.Config) func(path string) (ignored bool) {
+	configValue := c.Exts[ASPECT_GITIGNORE]
+	ignoreNothing := func(_ string) bool { return false }
+	if configValue == nil {
+		return ignoreNothing
+	}
+	return configValue.(func(string) bool)
+}
+
 func isEnabled(c *config.Config) bool {
 	enabled, hasEnabled := c.Exts[enabledExt]
 	return hasEnabled && enabled.(bool)
 }
 
-func addIgnore(c *config.Config, rel string, ignoreReader io.Reader) {
+func addIgnore(c *config.Config, rel, ignoreFilePath string, ignoreReader io.Reader) {
 	var ignorePatterns []gitignore.Pattern
 
 	// Load parent ignore patterns
@@ -65,7 +77,7 @@ func addIgnore(c *config.Config, rel string, ignoreReader io.Reader) {
 	}
 
 	// Append new ignore patterns
-	ignorePatterns = append(ignorePatterns, parseIgnore(rel, ignoreReader)...)
+	ignorePatterns = append(ignorePatterns, parseIgnore(rel, ignoreFilePath, ignoreReader)...)
 
 	// Persist appended ignore patterns
 	c.Exts[ignorePatternsExt] = ignorePatterns
@@ -76,7 +88,7 @@ func addIgnore(c *config.Config, rel string, ignoreReader io.Reader) {
 	}
 }
 
-func parseIgnore(rel string, ignoreReader io.Reader) []gitignore.Pattern {
+func parseIgnore(rel, ignoreFilePath string, ignoreReader io.Reader) []gitignore.Pattern {
 	var domain []string
 	if rel != "" {
 		domain = strings.Split(path.Clean(rel), "/")
@@ -84,6 +96,7 @@ func parseIgnore(rel string, ignoreReader io.Reader) []gitignore.Pattern {
 
 	matcherPatterns := make([]gitignore.Pattern, 0)
 
+	patternCount := 0
 	reader := bufio.NewScanner(ignoreReader)
 	for reader.Scan() {
 		p := strings.TrimSpace(reader.Text())
@@ -92,7 +105,10 @@ func parseIgnore(rel string, ignoreReader io.Reader) []gitignore.Pattern {
 		}
 
 		matcherPatterns = append(matcherPatterns, gitignore.ParsePattern(p, domain))
+		patternCount++
 	}
+
+	BazelLog.Tracef("Parsed %d gitignore patterns from %s", patternCount, ignoreFilePath)
 
 	return matcherPatterns
 }

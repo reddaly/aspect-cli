@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	gazelle "aspect.build/gazelle/gazelle/common"
+	"aspect.build/gazelle/gazelle/common/git"
 	"aspect.build/gazelle/gazelle/kotlin/kotlinconfig"
 	"aspect.build/gazelle/gazelle/kotlin/parser"
 	BazelLog "aspect.build/gazelle/internal/logger"
@@ -218,7 +219,9 @@ func (kt *kotlinLang) collectSourceFiles(cfg *kotlinconfig.KotlinConfig, args la
 
 	// TODO: "module" targets similar to java?
 
-	gazelle.GazelleWalkDir(args, func(f string) error {
+	isIgnored := git.GetIgnoreFunction(args.Config)
+
+	gazelle.GazelleWalkDir(args, isIgnored, func(f string) error {
 		// Otherwise the file is either source or potentially importable.
 		if isSourceFileType(f) {
 			BazelLog.Tracef("SourceFile: %s", f)

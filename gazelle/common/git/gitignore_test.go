@@ -195,5 +195,5 @@ func addIgnoreFileContent(c *config.Config, rel, ignoreContents string) {
 		}
 	}
 
-	addIgnore(c, rel, strings.NewReader(strings.Join(ignoreLines, "\n")))
+	addIgnore(c, rel, rel+"/.gitignore", strings.NewReader(strings.Join(ignoreLines, "\n")))
 }
