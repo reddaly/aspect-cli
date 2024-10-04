@@ -53,6 +53,10 @@ gazelle_binary(
         name = "%s_test" % test_workspace.replace("/WORKSPACE", "").replace("tests/", ""),
         dir = test_workspace.replace("/WORKSPACE", ""),
         gazelle_binary = "gazelle_kotlin_binary",
+        env = {
+            "ASPECT_CLI_LOG_DEBUG": "TRACE",
+            #"ASPECT_CLI_LOG_FILE": "/tmp/gaz_log_%s.txt" % test_workspace.replace("/WORKSPACE", "").replace("tests/", ""),
+        }
     )
     for test_workspace in glob(["tests/**/WORKSPACE"])
 ]

@@ -1,4 +1,5 @@
 load("@gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_path")
 
 # gazelle:prefix aspect.build/gazelle
 # gazelle:resolve go github.com/bazelbuild/buildtools/edit @com_github_bazelbuild_buildtools//edit:go_default_library
@@ -20,3 +21,21 @@ gazelle(name = "gazelle")
 #     ],
 #     command = "update-repos",
 # )
+
+
+# gazelle:prefix github.com/bazel-gazelle/tests/bcr
+gazelle_binary(
+    name = "gazelle_kotlin_bin",
+    languages = [
+        "//gazelle/kotlin:kotlin",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+go_path(
+    name = "gopath",
+    mode = "link",
+    deps = [
+        "//:gazelle_kotlin_bin",
+    ],
+)

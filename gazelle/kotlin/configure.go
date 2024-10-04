@@ -83,6 +83,9 @@ func (kt *kotlinLang) Configure(c *config.Config, rel string, f *rule.File) {
 		if err != nil {
 			BazelLog.Fatalf("error creating Maven resolver: %s", err.Error())
 		}
+
+		BazelLog.Tracef("Maven resolver DebugInfo:\n%s", resolver.(ThingWithDebugInfo).DebugInfo())
+
 		kt.mavenResolver = &resolver
 	}
 }
@@ -93,4 +96,8 @@ func (kc *kotlinLang) RegisterFlags(fs *flag.FlagSet, cmd string, c *config.Conf
 
 func (kc *kotlinLang) CheckFlags(fs *flag.FlagSet, c *config.Config) error {
 	return nil
+}
+
+type ThingWithDebugInfo interface {
+	DebugInfo() string
 }
