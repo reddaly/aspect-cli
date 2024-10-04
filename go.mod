@@ -28,6 +28,3 @@ require (
 	golang.org/x/tools/go/vcs v0.1.0-deprecated // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
-
-// DO NOT SUBMIT - local dev only
-//replace github.com/bazel-contrib/rules_jvm => "/home/red/code/rules_jvm"

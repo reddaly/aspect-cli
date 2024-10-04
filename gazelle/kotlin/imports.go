@@ -8,11 +8,8 @@ import (
 	godsutils "github.com/emirpasic/gods/utils"
 )
 
-// ImportStatement corresponds to the
-//
-// https://docs.oracle.com/javase/specs/jls/se23/html/jls-7.html#jls-ImportDeclaration
-//
-// TODO: drop? still used?
+// ImportStatement corresponds to a single Kotlin import. Only the package
+// information is retained in this representation of the import.
 type ImportStatement struct {
 	resolve.ImportSpec
 

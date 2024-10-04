@@ -1,5 +1,4 @@
 load("@gazelle//:def.bzl", "gazelle", "gazelle_binary")
-load("@io_bazel_rules_go//go:def.bzl", "go_path")
 
 # gazelle:prefix aspect.build/gazelle
 # gazelle:resolve go github.com/bazelbuild/buildtools/edit @com_github_bazelbuild_buildtools//edit:go_default_library
@@ -32,10 +31,3 @@ gazelle_binary(
     visibility = ["//visibility:private"],
 )
 
-go_path(
-    name = "gopath",
-    mode = "link",
-    deps = [
-        "//:gazelle_kotlin_bin",
-    ],
-)

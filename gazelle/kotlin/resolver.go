@@ -182,32 +182,21 @@ func (kt *kotlinLang) resolveImport(
 		return Resolution_NativeKotlin, nil, nil
 	}
 
-	// The import is a class, function, etc. Its parent is the package name.
-
-	// jvm_import := jvm_types.NewPackageName(importPackageName(&impt).Parent().String())
-
 	jvm_import := jvm_types.NewPackageName(impt.Imp)
 
 	cfgs := c.Exts[LanguageName].(kotlinconfig.Configs)
 	cfg, _ := cfgs[from.Pkg]
-
-	type thingWithDebugInfo interface{ DebugInfo() string }
 
 	// Maven imports
 	if mavenResolver := kt.mavenResolver; mavenResolver != nil {
 		if l, mavenError := (*mavenResolver).Resolve(jvm_import, cfg.ExcludedArtifacts(), cfg.MavenRepositoryName()); mavenError == nil {
 			return Resolution_Label, &l, nil
 		} else {
-			BazelLog.Debugf("Maven resolution error for import %q in source file %q. Using maven repo name %q, excluded artifacts (%v): error = %v; Maven debug info:\n%s",
-				impt.Imp,
-				impt.SourcePath,
-				cfg.MavenRepositoryName(),
-				cfg.ExcludedArtifacts(),
-				"" /*(*mavenResolver).(thingWithDebugInfo).DebugInfo()*/)
+			BazelLog.Debugf("Maven resolution failed: %v", mavenError)
 		}
 	}
 
-	// The original import, like "x.y.z" might be an identifier within a package that resolves,
+	// The original import, like "x.y.z" might be a subpackage within a package that resolves,
 	// so try to resolve the original identifer, then try to resolve the parent
 	// identifier, etc.
 	importParent := impt.packageFullyQualifiedName().Parent()
