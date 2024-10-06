@@ -3,6 +3,7 @@ kt_jvm_test(
     srcs = ["CalculatorTest.kt"],
     test_class = "xyz.foo.CalculatorTest",
     deps = [
+        "//src/main/xyz/foo",
         "@example//goog_truth",
         "@example//junit",
     ],
