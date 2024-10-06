@@ -12,11 +12,11 @@ bazel_dep(name = "platforms", version = "0.0.10")
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 use_repo(go_deps, "com_github_bazel_contrib_rules_jvm", "com_github_bazelbuild_buildtools", "com_github_emirpasic_gods", "com_github_go_git_go_git_v5", "com_github_google_go_cmp", "com_github_rs_zerolog", "com_github_smacker_go_tree_sitter", "com_github_yargevad_filepathx", "net_starlark_go")
-go_deps.archive_override(
-    path = "github.com/bazel-contrib/rules_jvm",
-    sha256 = "855a528d5231aa6cfa2d5bd7a2343f601a468f7af9671eecb091b0c540ce034c",
-    urls = ["http://localhost:8674/by-sha256/855a528d5231aa6cfa2d5bd7a2343f601a468f7af9671eecb091b0c540ce034c.zip"],
-)
+# go_deps.archive_override(
+#     path = "github.com/bazel-contrib/rules_jvm",
+#     sha256 = "855a528d5231aa6cfa2d5bd7a2343f601a468f7af9671eecb091b0c540ce034c",
+#     urls = ["http://localhost:8674/by-sha256/855a528d5231aa6cfa2d5bd7a2343f601a468f7af9671eecb091b0c540ce034c.zip"],
+# )
 
 go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
 

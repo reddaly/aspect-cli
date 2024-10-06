@@ -1,6 +1,8 @@
 load("@gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("//gazelle:gazelle.bzl", "gazelle_generation_test")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 
 # Exclude all test data
 # gazelle:exclude tests/
@@ -49,15 +51,21 @@ gazelle_binary(
 # A separate generation test for each tests/* test case
 [
     gazelle_generation_test(
-        name = "%s_test" % test_workspace.replace("/WORKSPACE", "").replace("tests/", ""),
+        name = "%s_test" % test_dir.replace("tests/", ""),
         size = "small",
-        dir = test_workspace.replace("/WORKSPACE", ""),
+        dir = test_dir,
         env = {
             "ASPECT_CLI_LOG_DEBUG": "TRACE",
         },
         gazelle_binary = "gazelle_kotlin_binary",
     )
-    for test_workspace in glob(["tests/**/WORKSPACE"])
+    for test_dir in sets.to_list(sets.make([
+        paths.dirname(p)
+        for p in glob([
+            "tests/**/WORKSPACE",
+            "tests/**/MODULE.bazel",
+        ])
+    ]))
 ]
 
 go_test(
