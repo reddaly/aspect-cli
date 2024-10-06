@@ -9,10 +9,12 @@ import (
 const Directive_KotlinExtension = "kotlin"
 
 type KotlinConfig struct {
-	*javaconfig.Config
+	javaConfig *javaconfig.Config
 
 	parent *KotlinConfig
 	rel    string
+
+	testFileSuffixes []string
 
 	generationEnabled bool
 }
@@ -21,17 +23,19 @@ type Configs = map[string]*KotlinConfig
 
 func New(repoRoot string) *KotlinConfig {
 	return &KotlinConfig{
-		Config:            javaconfig.New(repoRoot),
+		javaConfig:        javaconfig.New(repoRoot),
 		generationEnabled: true,
 		parent:            nil,
+		testFileSuffixes:  []string{"Test.kt"},
 	}
 }
 
 func (c *KotlinConfig) NewChild(childPath string) *KotlinConfig {
 	cCopy := *c
-	cCopy.Config = c.Config.NewChild()
+	cCopy.javaConfig = c.javaConfig.NewChild()
 	cCopy.rel = childPath
 	cCopy.parent = c
+	cCopy.testFileSuffixes = append([]string(nil), c.testFileSuffixes...)
 	return &cCopy
 }
 
@@ -43,6 +47,11 @@ func (c *KotlinConfig) SetGenerationEnabled(enabled bool) {
 // GenerationEnabled returns whether the extension is enabled or not.
 func (c *KotlinConfig) GenerationEnabled() bool {
 	return c.generationEnabled
+}
+
+// JavaConfig returns the [javaconfig.Config] used as part of the Kotlin config.
+func (c *KotlinConfig) JavaConfig() *javaconfig.Config {
+	return c.javaConfig
 }
 
 // ParentForPackage returns the parent Config for the given Bazel package.

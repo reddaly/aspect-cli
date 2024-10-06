@@ -195,7 +195,7 @@ func (kt *kotlinLang) resolveImport(
 
 	// Maven imports
 	if mavenResolver := kt.mavenResolver; mavenResolver != nil {
-		if l, mavenError := (*mavenResolver).Resolve(jvm_types.NewPackageName(identifier.Literal()), cfg.ExcludedArtifacts(), cfg.MavenRepositoryName()); mavenError == nil {
+		if l, mavenError := (*mavenResolver).Resolve(jvm_types.NewPackageName(identifier.Literal()), cfg.JavaConfig().ExcludedArtifacts(), cfg.JavaConfig().MavenRepositoryName()); mavenError == nil {
 			return Resolution_Label, &l, nil
 		} else {
 			BazelLog.Debugf("Maven resolution failed for identifier %q: %v", identifier.Literal(), mavenError)
