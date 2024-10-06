@@ -68,11 +68,12 @@ func (kt *kotlinLang) Embeds(r *rule.Rule, from label.Label) []label.Label {
 	return []label.Label{}
 }
 
+// Resolve implements the [github.com/bazelbuild/bazel-gazelle/language.Language.Resolve] function for Kotlin.
 func (kt *kotlinLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, importData interface{}, from label.Label) {
 	start := time.Now()
 	BazelLog.Infof("Resolve(%s): //%s:%s", LanguageName, from.Pkg, r.Name())
 
-	if r.Kind() == KtJvmLibrary || r.Kind() == KtJvmBinary {
+	if r.Kind() == KtJvmLibrary || r.Kind() == KtJvmBinary || r.Kind() == KtJvmTest {
 		var target KotlinTarget
 
 		switch r.Kind() {

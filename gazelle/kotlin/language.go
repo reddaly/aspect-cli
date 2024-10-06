@@ -53,7 +53,7 @@ var (
 )
 
 // The Gazelle extension for TypeScript rules.
-// TypeScript satisfies the language.Language interface including the
+// TypeScript satisfies the [language.Language] interface including the
 // Configurer and Resolver types.
 type kotlinLang struct {
 	// TODO: extend rules_jvm extension instead of duplicating?

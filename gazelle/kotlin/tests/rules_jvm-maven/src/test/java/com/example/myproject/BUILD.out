@@ -2,4 +2,5 @@ kt_jvm_test(
     name = "apptest_test",
     srcs = ["AppTest.kt"],
     test_class = "com.example.myproject.AppTest",
+    deps = ["@maven//:junit_junit"],
 )

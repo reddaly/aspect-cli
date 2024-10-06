@@ -2,4 +2,8 @@ kt_jvm_test(
     name = "calculatortest_test",
     srcs = ["CalculatorTest.kt"],
     test_class = "xyz.foo.CalculatorTest",
+    deps = [
+        "@example//goog_truth",
+        "@example//junit",
+    ],
 )
