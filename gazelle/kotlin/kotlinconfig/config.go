@@ -2,6 +2,7 @@ package kotlinconfig
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/bazel-contrib/rules_jvm/java/gazelle/javaconfig"
 )
@@ -30,6 +31,8 @@ func New(repoRoot string) *KotlinConfig {
 	}
 }
 
+// NewChild creates a new child Config. It inherits desired values from the
+// current Config and sets itself as the parent to the child.
 func (c *KotlinConfig) NewChild(childPath string) *KotlinConfig {
 	cCopy := *c
 	cCopy.javaConfig = c.javaConfig.NewChild()
@@ -52,6 +55,17 @@ func (c *KotlinConfig) GenerationEnabled() bool {
 // JavaConfig returns the [javaconfig.Config] used as part of the Kotlin config.
 func (c *KotlinConfig) JavaConfig() *javaconfig.Config {
 	return c.javaConfig
+}
+
+// IsTestBaseName reports if the given basename within the same bazel package
+// as the config should be considered a test.
+func (c *KotlinConfig) IsTestBaseName(baseName string) bool {
+	for _, suffix := range c.testFileSuffixes {
+		if strings.HasSuffix(baseName, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 // ParentForPackage returns the parent Config for the given Bazel package.

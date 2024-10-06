@@ -6,9 +6,10 @@ import (
 	"path"
 	"strings"
 
-	"aspect.build/gazelle/gazelle/kotlin/parser"
 	jvm_java "github.com/bazel-contrib/rules_jvm/java/gazelle/private/java"
 	jvm_types "github.com/bazel-contrib/rules_jvm/java/gazelle/private/types"
+
+	"aspect.build/gazelle/gazelle/kotlin/parser"
 )
 
 // IsNativeImport reports if the import literal is a native Kotlin or Java import.
@@ -100,4 +101,37 @@ func toBinaryTargetName(mainFile string) string {
 
 	// TODO: move target name template to directive
 	return base + "_bin"
+}
+
+func toTestTargetName(mainFile string) string {
+	base := strings.ToLower(strings.TrimSuffix(path.Base(mainFile), path.Ext(mainFile)))
+
+	// TODO: move target name template to directive
+	return base + "_test"
+}
+
+/**
+ * Information for kotlin test including:
+ * - kotlin import statements from all files
+ * - the package
+ * - the files
+ * - the fully-qualified class name of the test
+ */
+type KotlinTestTarget struct {
+	KotlinTarget
+
+	Files     []string
+	Package   *parser.Identifier
+	TestClass *parser.Identifier
+}
+
+func NewKotlinTestTarget(files []string, pkg, testClass *parser.Identifier) *KotlinTestTarget {
+	return &KotlinTestTarget{
+		KotlinTarget: KotlinTarget{
+			Imports: make(map[string]*ImportStatement),
+		},
+		Files:     files,
+		Package:   pkg,
+		TestClass: testClass,
+	}
 }

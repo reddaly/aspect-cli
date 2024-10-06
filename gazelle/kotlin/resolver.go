@@ -75,10 +75,15 @@ func (kt *kotlinLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.
 	if r.Kind() == KtJvmLibrary || r.Kind() == KtJvmBinary {
 		var target KotlinTarget
 
-		if r.Kind() == KtJvmLibrary {
+		switch r.Kind() {
+		case KtJvmLibrary:
 			target = importData.(*KotlinLibTarget).KotlinTarget
-		} else {
+		case KtJvmBinary:
 			target = importData.(*KotlinBinTarget).KotlinTarget
+		case KtJvmTest:
+			target = importData.(*KotlinTestTarget).KotlinTarget
+		default:
+			log.Fatalf("Resolve called on unknown rule kind %q", r.Kind())
 		}
 
 		deps, err := kt.resolveImports(c, ix, target.importsSeq(), from)
