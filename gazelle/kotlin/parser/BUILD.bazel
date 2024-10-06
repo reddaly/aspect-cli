@@ -7,13 +7,17 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//gazelle/common/treesitter",
-        "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_smacker_go_tree_sitter//:go-tree-sitter",
     ],
 )
 
 go_test(
     name = "parser_test",
+    size = "small",
     srcs = ["parser_test.go"],
     embed = [":parser"],
+    deps = [
+        "@com_github_google_go_cmp//cmp",
+        "@com_github_google_go_cmp//cmp/cmpopts",
+    ],
 )

@@ -2,20 +2,53 @@ package parser
 
 import (
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 var testCases = []struct {
 	desc, kt string
-	filename string
-	pkg      string
-	imports  []string
+	want     parseResultComparable
 }{
 	{
-		desc:     "empty",
-		kt:       "",
-		filename: "empty.kt",
-		pkg:      "",
-		imports:  []string{},
+		desc: "import star",
+		kt: `package a.b.c
+
+import  x.y.z.* 
+		`,
+		want: parseResultComparable{
+			File:    "stars.kt",
+			Package: "a.b.c",
+			Imports: []importComparable{
+				{Identifier: "x.y.z", IsStar: true},
+			},
+		},
+	},
+	{
+		desc: "aliased",
+		kt: `package hey.there
+
+import com.example.foo.Bar as MyBar
+import com.example.foo.Bar as /*x*/MyBar2
+`,
+		want: parseResultComparable{
+			File:    "aliased.kt",
+			Package: "hey.there",
+			Imports: []importComparable{
+				{Identifier: "com.example.foo.Bar", Alias: "MyBar"},
+				{Identifier: "com.example.foo.Bar", Alias: "MyBar2"},
+			},
+		},
+	},
+	{
+		desc: "empty",
+		kt:   "",
+		want: parseResultComparable{
+			File:    "empty.kt",
+			Package: "",
+			Imports: []importComparable{},
+		},
 	},
 	{
 		desc: "simple",
@@ -23,9 +56,14 @@ var testCases = []struct {
 import a.B
 import c.D as E
 	`,
-		filename: "simple.kt",
-		pkg:      "",
-		imports:  []string{"a", "c"},
+		want: parseResultComparable{
+			File:    "simple.kt",
+			Package: "",
+			Imports: []importComparable{
+				{Identifier: "a.B"},
+				{Identifier: "c.D", Alias: "E"},
+			},
+		},
 	},
 	{
 		desc: "stars",
@@ -33,9 +71,13 @@ import c.D as E
 
 import  d.y.* 
 		`,
-		filename: "stars.kt",
-		pkg:      "a.b.c",
-		imports:  []string{"d.y"},
+		want: parseResultComparable{
+			File:    "stars.kt",
+			Package: "a.b.c",
+			Imports: []importComparable{
+				{Identifier: "d.y", IsStar: true},
+			},
+		},
 	},
 	{
 		desc: "comments",
@@ -48,39 +90,43 @@ import a.B // y
 /* asdf */ import /* asdf */ c.D // w
 import /* fdsa */ d/* asdf */.* // w
 				`,
-		filename: "comments.kt",
-		pkg:      "x",
-		imports:  []string{"a", "c", "d"},
+		want: parseResultComparable{
+			File:    "comments.kt",
+			Package: "x",
+			Imports: []importComparable{
+				{Identifier: "a.B"},
+				{Identifier: "c.D"},
+				{Identifier: "d", IsStar: true},
+			},
+		},
 	},
-	// Value classes: https://github.com/fwcd/tree-sitter-kotlin/commit/80834a15154448cfa795bfa6b8be3559af1753fc
 	{
 		desc: "value-classes",
 		kt: `
 @JvmInline
 value class Password(private val s: String)
 	`,
-		filename: "simple.kt",
-		pkg:      "",
-		imports:  []string{},
+		want: parseResultComparable{
+			File:    "simple.kt",
+			Package: "",
+			Imports: []importComparable{},
+		},
 	},
 }
 
 func TestTreesitterParser(t *testing.T) {
-
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			res, _ := NewParser().Parse(tc.filename, tc.kt)
+			res, _ := NewParser().Parse(tc.want.File, tc.kt)
 
-			if !equal(res.Imports, tc.imports) {
-				t.Errorf("Imports...\nactual:  %#v;\nexpected: %#v\nkotlin code:\n%v", res.Imports, tc.imports, tc.kt)
-			}
-
-			if res.Package != tc.pkg {
-				t.Errorf("Package....\nactual:  %#v;\nexpected: %#v\nkotlin code:\n%v", res.Package, tc.pkg, tc.kt)
+			if diff := cmp.Diff(tc.want, makeComparable(res), cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("unexpected diff (-want, +got):\n%s", diff)
 			}
 		})
 	}
+}
 
+func TestMainDetection(t *testing.T) {
 	t.Run("main detection", func(t *testing.T) {
 		res, _ := NewParser().Parse("main.kt", "fun main() {}")
 		if !res.HasMain {
@@ -106,14 +152,42 @@ fun main() {}
 	})
 }
 
-func equal[T comparable](a, b []T) bool {
-	if len(a) != len(b) {
-		return false
+type parseResultComparable struct {
+	File    string
+	Imports []importComparable
+	Package string
+	HasMain bool
+}
+
+type importComparable struct {
+	Identifier string
+	IsStar     bool
+	Alias      string
+}
+
+func makeComparable(result *ParseResult) parseResultComparable {
+	comparable := parseResultComparable{
+		File:    result.File,
+		Package: packageString(result),
+		HasMain: result.HasMain,
 	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
+	for _, imp := range result.Imports {
+		alias := ""
+		if imp.Alias() != nil {
+			alias = imp.Alias().Literal()
 		}
+		comparable.Imports = append(comparable.Imports, importComparable{
+			Identifier: imp.Identifier().Literal(),
+			IsStar:     imp.IsStarImport(),
+			Alias:      alias,
+		})
 	}
-	return true
+	return comparable
+}
+
+func packageString(pr *ParseResult) string {
+	if pr.Package == nil {
+		return ""
+	}
+	return pr.Package.Literal()
 }

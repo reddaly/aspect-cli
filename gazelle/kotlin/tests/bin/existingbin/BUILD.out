@@ -1,0 +1,15 @@
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
+
+kt_jvm_library(
+    name = "my_lib",
+    srcs = ["Hello.kt"],
+)
+
+# TODO - consider revising the logic to avoid creating a binary if there is
+# already a library containing the Kotlin file.
+kt_jvm_binary(
+    name = "hello_bin",
+    srcs = ["Hello.kt"],
+    main_class = "Hello",
+    deps = [":my_lib"],
+)

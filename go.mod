@@ -8,6 +8,7 @@ require (
 	github.com/bazelbuild/buildtools v0.0.0-20240918101019-be1c24cc9a44
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-git/go-git/v5 v5.12.0
+	github.com/google/go-cmp v0.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82
 	github.com/yargevad/filepathx v1.0.0

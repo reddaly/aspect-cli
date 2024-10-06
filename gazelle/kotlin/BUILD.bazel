@@ -29,7 +29,6 @@ go_library(
         "@com_github_bazel_contrib_rules_jvm//java/gazelle/private/types",
         "@com_github_emirpasic_gods//maps/treemap",
         "@com_github_emirpasic_gods//sets/treeset",
-        "@com_github_emirpasic_gods//utils",
         "@com_github_rs_zerolog//:zerolog",
         "@gazelle//config:go_default_library",
         "@gazelle//label:go_default_library",
@@ -51,17 +50,19 @@ gazelle_binary(
 [
     gazelle_generation_test(
         name = "%s_test" % test_workspace.replace("/WORKSPACE", "").replace("tests/", ""),
+        size = "small",
         dir = test_workspace.replace("/WORKSPACE", ""),
-        gazelle_binary = "gazelle_kotlin_binary",
         env = {
             "ASPECT_CLI_LOG_DEBUG": "TRACE",
-        }
+        },
+        gazelle_binary = "gazelle_kotlin_binary",
     )
     for test_workspace in glob(["tests/**/WORKSPACE"])
 ]
 
 go_test(
     name = "kotlin_test",
+    size = "small",
     srcs = ["kotlin_test.go"],
     embed = [":kotlin"],
 )
