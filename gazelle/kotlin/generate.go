@@ -7,12 +7,14 @@ import (
 	"math"
 	"os"
 	"path"
+	"path/filepath"
+	"slices"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
-	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/emirpasic/gods/sets/treeset"
 
 	gazelle "aspect.build/gazelle/gazelle/common"
@@ -46,15 +48,20 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 
 	// TODO: multiple library targets (lib, test, ...)
 	libTarget := NewKotlinLibTarget()
-	binTargets := treemap.NewWithStringComparator()
+	binTargets := map[string]*KotlinBinTarget{}
+	var testTargets []*KotlinTestTarget
 
 	// Parse all source files and group information into target(s)
 	for p := range kt.parseFiles(args, sourceFiles) {
 		var target *KotlinTarget
 
-		if p.HasMain {
+		if cfg.IsTestBaseName(filepath.Base(p.File)) {
+			testTarget := NewKotlinTestTarget([]string{p.File}, p.Package, guessClassName(p))
+			testTargets = append(testTargets, testTarget)
+			target = &testTarget.KotlinTarget
+		} else if p.HasMain {
 			binTarget := NewKotlinBinTarget(p.File, p.Package)
-			binTargets.Put(p.File, binTarget)
+			binTargets[p.File] = binTarget
 
 			target = &binTarget.KotlinTarget
 		} else {
@@ -84,10 +91,22 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 		os.Exit(1)
 	}
 
-	for _, v := range binTargets.Values() {
-		binTarget := v.(*KotlinBinTarget)
+	sortedBinTargets := slices.SortedFunc(maps.Values(binTargets), func(a, b *KotlinBinTarget) int {
+		return strings.Compare(toBinaryTargetName(a.File), toBinaryTargetName(b.File))
+	})
+
+	for _, binTarget := range sortedBinTargets {
 		binTargetName := toBinaryTargetName(binTarget.File)
 		kt.addBinaryRule(binTargetName, binTarget, args, &result)
+	}
+
+	sort.Slice(testTargets, func(i, j int) bool {
+		return testTargets[i].Files[0] < testTargets[j].Files[0]
+	})
+
+	for _, target := range testTargets {
+		binTargetName := toTestTargetName(target.Files[0])
+		kt.addTestRule(binTargetName, target, args, &result)
 	}
 
 	return result
@@ -149,6 +168,43 @@ func (kt *kotlinLang) addBinaryRule(targetName string, target *KotlinBinTarget, 
 	result.Imports = append(result.Imports, target)
 
 	BazelLog.Infof("add rule '%s' '%s:%s'", ktBinary.Kind(), args.Rel, ktBinary.Name())
+}
+
+func (kt *kotlinLang) addTestRule(targetName string, target *KotlinTestTarget, args language.GenerateArgs, result *language.GenerateResult) error {
+	// Check for name-collisions with the rule being generated.
+	colError := gazelle.CheckCollisionErrors(targetName, KtJvmTest, sourceRuleKinds, args)
+	if colError != nil {
+		return colError
+	}
+
+	// TODO - is this necessary? It was copied from the addLibRule function.
+	// Generate nothing if there are no source files. Remove any existing rules.
+	if len(target.Files) == 0 {
+		if args.File == nil {
+			return nil
+		}
+
+		for _, r := range args.File.Rules {
+			if r.Name() == targetName && r.Kind() == KtJvmTest {
+				emptyRule := rule.NewRule(KtJvmTest, targetName)
+				result.Empty = append(result.Empty, emptyRule)
+				return nil
+			}
+		}
+
+		return nil
+	}
+
+	ktLibrary := rule.NewRule(KtJvmTest, targetName)
+	ktLibrary.SetAttr("srcs", target.Files)
+	ktLibrary.SetAttr("test_class", target.TestClass.Literal())
+	ktLibrary.SetPrivateAttr(packagesKey, target)
+
+	result.Gen = append(result.Gen, ktLibrary)
+	result.Imports = append(result.Imports, target)
+
+	BazelLog.Infof("add rule %q %q:%q", ktLibrary.Kind(), args.Rel, ktLibrary.Name())
+	return nil
 }
 
 // TODO: put in common?
@@ -249,4 +305,14 @@ func sequenceToSlice[T any](seq iter.Seq[T]) []T {
 		result = append(result, item)
 	}
 	return result
+}
+
+// guessClassName returns a Kotlin identifier for the class within the provided file, or nil
+// if there is no class within the file.
+func guessClassName(p *parser.ParseResult) *parser.Identifier {
+	id, err := parser.NewSimpleIdentifier(strings.TrimSuffix(filepath.Base(p.File), ".kt"))
+	if err != nil {
+		return nil
+	}
+	return p.Package.Child(id)
 }

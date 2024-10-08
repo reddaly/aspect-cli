@@ -13,8 +13,28 @@ import (
 const LanguageName = "kotlin"
 
 const (
+
+	// The name of the [kt_jvm_library] rule kind. This name is mapped to a [rule.KindInfo]
+	// instances by [language.Language.Kinds] method of the Kotlin [language.Language]
+	// instance.
+	//
+	// [kt_jvm_library]: https://bazelbuild.github.io/rules_kotlin/kotlin.html#kt_jvm_library
 	KtJvmLibrary = "kt_jvm_library"
-	KtJvmBinary  = "kt_jvm_binary"
+
+	// The name of the [kt_jvm_binary] rule kind. This name is mapped to a [rule.KindInfo]
+	// instances by [language.Language.Kinds] method of the Kotlin [language.Language]
+	// instance.
+	//
+	// [kt_jvm_binary]: https://bazelbuild.github.io/rules_kotlin/kotlin.html#kt_jvm_binary
+	KtJvmBinary = "kt_jvm_binary"
+
+	// The name of the [kt_jvm_test] rule kind. This name is mapped to a [rule.KindInfo]
+	// instances by [language.Language.Kinds] method of the Kotlin [language.Language]
+	// instance.
+	//
+	// [kt_jvm_test]: https://bazelbuild.github.io/rules_kotlin/kotlin.html#kt_jvm_test
+	KtJvmTest = "kt_jvm_test"
+
 	// rulesKotlinWorkspaceBasedRepositoryName is the canonical repository name of the
 	// rules_kotlin repository for WORKSPACE-based projects.
 	rulesKotlinWorkspaceBasedRepositoryName = "io_bazel_rules_kotlin"
@@ -33,7 +53,7 @@ var (
 )
 
 // The Gazelle extension for TypeScript rules.
-// TypeScript satisfies the language.Language interface including the
+// TypeScript satisfies the [language.Language] interface including the
 // Configurer and Resolver types.
 type kotlinLang struct {
 	// TODO: extend rules_jvm extension instead of duplicating?
@@ -71,6 +91,21 @@ var kotlinKinds = map[string]rule.KindInfo{
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs:  map[string]bool{},
 		ResolveAttrs:    map[string]bool{},
+	},
+
+	KtJvmTest: {
+		MatchAny: false,
+		NonEmptyAttrs: map[string]bool{
+			"srcs":       true,
+			"test_class": true,
+		},
+		SubstituteAttrs: map[string]bool{},
+		MergeableAttrs: map[string]bool{
+			"srcs": true,
+		},
+		ResolveAttrs: map[string]bool{
+			"deps": true,
+		},
 	},
 }
 

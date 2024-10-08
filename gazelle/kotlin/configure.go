@@ -3,15 +3,16 @@ package gazelle
 import (
 	"flag"
 
-	common "aspect.build/gazelle/gazelle/common"
-	"aspect.build/gazelle/gazelle/common/git"
-	"aspect.build/gazelle/gazelle/kotlin/kotlinconfig"
-	BazelLog "aspect.build/gazelle/internal/logger"
 	jvm_javaconfig "github.com/bazel-contrib/rules_jvm/java/gazelle/javaconfig"
 	jvm_maven "github.com/bazel-contrib/rules_jvm/java/gazelle/private/maven"
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/rule"
 	"github.com/rs/zerolog"
+
+	common "aspect.build/gazelle/gazelle/common"
+	"aspect.build/gazelle/gazelle/common/git"
+	"aspect.build/gazelle/gazelle/kotlin/kotlinconfig"
+	BazelLog "aspect.build/gazelle/internal/logger"
 )
 
 var _ config.Configurer = (*kotlinLang)(nil)
@@ -61,7 +62,7 @@ func (kt *kotlinLang) Configure(c *config.Config, rel string, f *rule.File) {
 			// TODO: JavaMavenRepositoryName: https://github.com/bazel-contrib/rules_jvm/commit/e46bb11bedb2ead45309eae04619caca684f6243
 
 			case jvm_javaconfig.JavaMavenInstallFile:
-				cfg.SetMavenInstallFile(d.Value)
+				cfg.JavaConfig().SetMavenInstallFile(d.Value)
 
 			// TODO: move to common
 			case git.Directive_GitIgnore:
@@ -71,13 +72,13 @@ func (kt *kotlinLang) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 
 	if kt.mavenResolver == nil {
-		BazelLog.Tracef("Creating Maven resolver: %s", cfg.MavenInstallFile())
+		BazelLog.Tracef("Creating Maven resolver: %s", cfg.JavaConfig().MavenInstallFile())
 
 		// TODO: better zerolog configuration
 		logger := zerolog.New(BazelLog.GetOutput()).Level(zerolog.TraceLevel)
 
 		resolver, err := jvm_maven.NewResolver(
-			cfg.MavenInstallFile(),
+			cfg.JavaConfig().MavenInstallFile(),
 			logger,
 		)
 		if err != nil {

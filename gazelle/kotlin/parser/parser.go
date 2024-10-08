@@ -124,6 +124,18 @@ func (i *Identifier) Literal() string {
 	return strings.Join(strs, ".")
 }
 
+// Child returns this identifier with an additional component.
+//
+// For an identifier like "foo.bar.baz" an an argument like `NewSimpleIdentifier("zee")`,
+// returns an Identifer like "foo.bar.baz.zee".
+func (i *Identifier) Child(childComponent *SimpleIdentiifer) *Identifier {
+	childId := &Identifier{}
+	childId.parts = append(childId.parts, i.parts...)
+	childId.parts = append(childId.parts, childComponent)
+
+	return childId
+}
+
 // SimpleIdentiifer corresonds to the [simpleIdentifier] grammar rule in the Kotlin
 // language specificaiton. An [Identifier] is made up of dot-delimited
 // [SimpleIdentifier] instances.
@@ -131,6 +143,14 @@ func (i *Identifier) Literal() string {
 // [simpleIdentifier]: https://kotlinlang.org/spec/syntax-and-grammar.html#grammar-rule-simpleIdentifier
 type SimpleIdentiifer struct {
 	literal string
+}
+
+// NewSimpleIdentifier returns a [SimpleIdentiifer] from an identifier literal.
+func NewSimpleIdentifier(value string) (*SimpleIdentiifer, error) {
+	if kotlinUnquotedIdentifierRegexp.MatchString(value) {
+		return &SimpleIdentiifer{value}, nil
+	}
+	return nil, fmt.Errorf("NewSimpleIdentifier only supports identifiers that match %s; %q doesn't match", kotlinUnquotedIdentifierRegexp, value)
 }
 
 // Literal returns the form the the [SimpleIdentiifer] as it would appears in

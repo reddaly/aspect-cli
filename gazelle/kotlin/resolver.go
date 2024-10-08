@@ -33,7 +33,7 @@ const (
 	Resolution_NativeKotlin = 3
 )
 
-type ResolutionType = int
+type ResolutionType int
 
 func (*kotlinLang) Name() string {
 	return LanguageName
@@ -68,23 +68,44 @@ func (kt *kotlinLang) Embeds(r *rule.Rule, from label.Label) []label.Label {
 	return []label.Label{}
 }
 
+// Resolve implements the [github.com/bazelbuild/bazel-gazelle/language.Language.Resolve] function for Kotlin.
 func (kt *kotlinLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.RemoteCache, r *rule.Rule, importData interface{}, from label.Label) {
 	start := time.Now()
 	BazelLog.Infof("Resolve(%s): //%s:%s", LanguageName, from.Pkg, r.Name())
 
-	if r.Kind() == KtJvmLibrary || r.Kind() == KtJvmBinary {
+	if r.Kind() == KtJvmLibrary || r.Kind() == KtJvmBinary || r.Kind() == KtJvmTest {
 		var target KotlinTarget
+		var extraDeps []*label.Label
 
-		if r.Kind() == KtJvmLibrary {
+		switch r.Kind() {
+		case KtJvmLibrary:
 			target = importData.(*KotlinLibTarget).KotlinTarget
-		} else {
+		case KtJvmBinary:
 			target = importData.(*KotlinBinTarget).KotlinTarget
+		case KtJvmTest:
+			testTarget := importData.(*KotlinTestTarget)
+			target = testTarget.KotlinTarget
+
+			importContext := func() string {
+				return fmt.Sprintf("implicit test dependency on library that provides the Kotlin/Java package %q", testTarget.Package.Literal())
+			}
+			if resolutionType, depLabel, err := kt.resolveImport(c, ix, testTarget.Package, from, importContext); err != nil {
+				log.Fatalf("error resolving library dependency of test: %v", err)
+			} else if resolutionType == Resolution_Label {
+				extraDeps = append(extraDeps, depLabel)
+			}
+
+		default:
+			log.Fatalf("Resolve called on unknown rule kind %q", r.Kind())
 		}
 
 		deps, err := kt.resolveImports(c, ix, target.importsSeq(), from)
 		if err != nil {
 			log.Fatalf("Resolution Error: %v", err)
 			os.Exit(1)
+		}
+		for _, extraDep := range extraDeps {
+			deps.Add(extraDep)
 		}
 
 		if !deps.Empty() {
@@ -95,6 +116,8 @@ func (kt *kotlinLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.
 	BazelLog.Infof("Resolve(%s): //%s:%s DONE in %s", LanguageName, from.Pkg, r.Name(), time.Since(start).String())
 }
 
+// importContext is a function that describes the context of the import for
+// error reporting purposes.
 func (kt *kotlinLang) resolveImports(
 	c *config.Config,
 	ix *resolve.RuleIndex,
@@ -105,7 +128,11 @@ func (kt *kotlinLang) resolveImports(
 
 	for impt := range imports {
 
-		resolutionType, dep, err := kt.resolveImport(c, ix, impt.ImportHeader.Identifier(), impt, from)
+		importContext := func() string {
+			return fmt.Sprintf("the %q import statement in %q", impt.ImportHeader.String(), impt.SourcePath)
+		}
+
+		resolutionType, dep, err := kt.resolveImport(c, ix, impt.ImportHeader.Identifier(), from, importContext)
 		if err != nil {
 			return nil, err
 		}
@@ -141,12 +168,15 @@ func (kt *kotlinLang) resolveImports(
 // fromStatement indicates the import statement from which the identifier was derived, but
 // the identifier of the fromStatement may be different from identifier if this function
 // is being called recursively for a parent [*parser.Identifier].
+//
+// importContext is a function that describes the context of the import for
+// error reporting purposes.
 func (kt *kotlinLang) resolveImport(
 	c *config.Config,
 	ix *resolve.RuleIndex,
 	identifier *parser.Identifier,
-	fromStatement *ImportStatement,
 	fromLabel label.Label,
+	importContext func() string,
 ) (ResolutionType, *label.Label, error) {
 	// Gazelle overrides
 	// TODO: generalize into gazelle/common
@@ -167,11 +197,10 @@ func (kt *kotlinLang) resolveImport(
 		// Too many results, don't know which is correct
 		if len(filteredMatches) > 1 {
 			return Resolution_Error, nil, fmt.Errorf(
-				"Importing identifier %q (from the %q import statement in %q) resolved to multiple targets (%s)"+
+				"Importing identifier %q (from %s) resolved to multiple targets (%s)"+
 					" - this must be fixed using the \"gazelle:resolve\" directive",
 				identifier.Literal(),
-				fromStatement.ImportHeader.String(),
-				fromStatement.SourcePath,
+				importContext(),
 				targetListFromResults(matches))
 		}
 
@@ -195,7 +224,7 @@ func (kt *kotlinLang) resolveImport(
 
 	// Maven imports
 	if mavenResolver := kt.mavenResolver; mavenResolver != nil {
-		if l, mavenError := (*mavenResolver).Resolve(jvm_types.NewPackageName(identifier.Literal()), cfg.ExcludedArtifacts(), cfg.MavenRepositoryName()); mavenError == nil {
+		if l, mavenError := (*mavenResolver).Resolve(jvm_types.NewPackageName(identifier.Literal()), cfg.JavaConfig().ExcludedArtifacts(), cfg.JavaConfig().MavenRepositoryName()); mavenError == nil {
 			return Resolution_Label, &l, nil
 		} else {
 			BazelLog.Debugf("Maven resolution failed for identifier %q: %v", identifier.Literal(), mavenError)
@@ -209,7 +238,7 @@ func (kt *kotlinLang) resolveImport(
 	if importParent == nil {
 		return Resolution_NotFound, nil, nil
 	}
-	return kt.resolveImport(c, ix, importParent, fromStatement, fromLabel)
+	return kt.resolveImport(c, ix, importParent, fromLabel, importContext)
 }
 
 // targetListFromResults returns a string with the human-readable list of
