@@ -83,12 +83,13 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 
 	var result language.GenerateResult
 
-	libTargetName := gazelle.ToDefaultTargetName(args, "root")
-
-	srcGenErr := kt.addLibraryRule(libTargetName, libTarget, args, false, &result)
-	if srcGenErr != nil {
-		fmt.Fprintf(os.Stderr, "Source rule generation error: %v\n", srcGenErr)
-		os.Exit(1)
+	if len(libTarget.Files) != 0 {
+		libTargetName := gazelle.ToDefaultTargetName(args, "root")
+		srcGenErr := kt.addLibraryRule(libTargetName, libTarget, args, false, &result)
+		if srcGenErr != nil {
+			fmt.Fprintf(os.Stderr, "Source rule generation error: %v\n", srcGenErr)
+			os.Exit(1)
+		}
 	}
 
 	sortedBinTargets := slices.SortedFunc(maps.Values(binTargets), func(a, b *KotlinBinTarget) int {
