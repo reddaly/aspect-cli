@@ -48,6 +48,18 @@ gazelle_binary(
     visibility = ["//visibility:private"],
 )
 
+gazelle_binary(
+    name = "gazelle_prod",
+    languages = [
+      ":kotlin",
+      "@gazelle//language/go",
+      "@gazelle//language/proto",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+
+
 # A separate generation test for each tests/* test case
 [
     gazelle_generation_test(
