@@ -12,5 +12,6 @@ class PlatformGrpcTargetsFlags {
                 "Which environment to use for connecting to Tapestry services (LOCAL, DEV, STAGING, PROD, DEV_OLD, PROD_OLD). Default is LOCAL.",
             ],
         )
+        var environment: Environment = Environment.LOCAL
     }
 }
