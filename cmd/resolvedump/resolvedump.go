@@ -44,10 +44,11 @@ func mainErr() error {
 		}
 		if report.ParseError != nil {
 			errCount++
+			logger.Errorf("Parse error for %s:\n%v", f, report.ParseError)
 		}
 
 		if len(report.TopLevelIdentifiers) != 0 {
-			logger.Infof("%s has top level identifiers: %v; package %s", f, report.TopLevelIdentifiers, report.Package)
+			//logger.Infof("%s has top level identifiers: %v; package %s", f, report.TopLevelIdentifiers, report.Package)
 		}
 	}
 	logger.Infof("%d total files, %d errors", len(files), errCount)
@@ -67,7 +68,8 @@ func (a *analysis) gazelleResolveComments() []string {
 	}
 	var out []string
 	for _, id := range a.TopLevelIdentifiers {
-		out = append(out, fmt.Sprintf("%s.%s", a.Package, id))
+		// # gazelle:resolve source-lang import-lang import-string label
+		out = append(out, fmt.Sprintf("# gazelle:resolve kotlin kotlin %s.%s TODO_LABEL", a.Package, id))
 	}
 	return out
 }
@@ -103,7 +105,7 @@ func analyzeFile(path string) (*analysis, error) {
 	}
 
 	if len(parseErrs) > 0 {
-		parseErr = fmt.Errorf("%d parse error(s):\n%s", strings.Join(parseErrs, "\n"))
+		parseErr = fmt.Errorf("%d parse error(s):\n%s", len(parseErrs), strings.Join(parseErrs, "\n"))
 	}
 
 	return &analysis{
