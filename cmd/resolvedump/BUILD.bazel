@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "resolvedump_lib",
+    srcs = ["resolvedump.go"],
+    importpath = "aspect.build/gazelle/cmd/resolvedump",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//gazelle/common/treesitter",
+        "//gazelle/common/treesitter/grammars/kotlin",
+        "//internal/logger",
+        "@com_github_goreleaser_fileglob//:fileglob",
+        "@com_github_smacker_go_tree_sitter//:go-tree-sitter",
+    ],
+)
+
+go_binary(
+    name = "resolvedump",
+    embed = [":resolvedump_lib"],
+    visibility = ["//visibility:public"],
+)
