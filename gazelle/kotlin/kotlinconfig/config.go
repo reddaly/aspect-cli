@@ -1,6 +1,7 @@
 package kotlinconfig
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -29,6 +30,19 @@ func New(repoRoot string) *KotlinConfig {
 		parent:            nil,
 		testFileSuffixes:  []string{"Test.kt"},
 	}
+}
+
+// String returns a debug string for the config.
+func (c *KotlinConfig) String() string {
+	return fmt.Sprintf("(KotlinConfig %q: enabled=%v; parent=\n  %s)", c.path(), c.generationEnabled, c.parent)
+}
+
+func (c *KotlinConfig) path() string {
+	if c.parent == nil {
+		return c.rel
+	}
+	return c.rel
+	//return c.parent.path() + "/" + c.rel
 }
 
 // NewChild creates a new child Config. It inherits desired values from the

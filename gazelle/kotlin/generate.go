@@ -41,7 +41,7 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 		return language.GenerateResult{}
 	}
 
-	BazelLog.Tracef("GenerateRules(%s): %s", LanguageName, args.Rel)
+	BazelLog.Tracef("GenerateRules(%s): %s; config = %s", LanguageName, args.Rel, cfg)
 
 	// Collect all source files.
 	sourceFiles := kt.collectSourceFiles(cfg, args)
@@ -87,7 +87,7 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 		libTargetName := gazelle.ToDefaultTargetName(args, "root")
 		srcGenErr := kt.addLibraryRule(libTargetName, libTarget, args, false, &result)
 		if srcGenErr != nil {
-			fmt.Fprintf(os.Stderr, "Source rule generation error: %v\n", srcGenErr)
+			fmt.Fprintf(os.Stderr, "Library rule generation error: %v\n", srcGenErr)
 			os.Exit(1)
 		}
 	}
@@ -98,7 +98,10 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 
 	for _, binTarget := range sortedBinTargets {
 		binTargetName := toBinaryTargetName(binTarget.File)
-		kt.addBinaryRule(binTargetName, binTarget, args, &result)
+		if err := kt.addBinaryRule(binTargetName, binTarget, args, &result); err != nil {
+			fmt.Fprintf(os.Stderr, "Binary rule generation error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	sort.Slice(testTargets, func(i, j int) bool {
@@ -107,7 +110,10 @@ func (kt *kotlinLang) GenerateRules(args language.GenerateArgs) language.Generat
 
 	for _, target := range testTargets {
 		binTargetName := toTestTargetName(target.Files[0])
-		kt.addTestRule(binTargetName, target, args, &result)
+		if err := kt.addTestRule(binTargetName, target, args, &result); err != nil {
+			fmt.Fprintf(os.Stderr, "Test rule generation error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	return result
@@ -152,7 +158,12 @@ func (kt *kotlinLang) addLibraryRule(targetName string, target *KotlinLibTarget,
 	return nil
 }
 
-func (kt *kotlinLang) addBinaryRule(targetName string, target *KotlinBinTarget, args language.GenerateArgs, result *language.GenerateResult) {
+func (kt *kotlinLang) addBinaryRule(targetName string, target *KotlinBinTarget, args language.GenerateArgs, result *language.GenerateResult) error {
+	// Check for name-collisions with the rule being generated.
+	colError := gazelle.CheckCollisionErrors(targetName, KtJvmBinary, treeset.NewWithStringComparator(KtJvmBinary), args)
+	if colError != nil {
+		return colError
+	}
 	// TODO: Rely on the parser to determine the main class. The main function could be
 	// elsewhere in the file.
 	main_class := strings.TrimSuffix(target.File, ".kt")
@@ -169,11 +180,12 @@ func (kt *kotlinLang) addBinaryRule(targetName string, target *KotlinBinTarget, 
 	result.Imports = append(result.Imports, target)
 
 	BazelLog.Infof("add rule '%s' '%s:%s'", ktBinary.Kind(), args.Rel, ktBinary.Name())
+	return nil
 }
 
 func (kt *kotlinLang) addTestRule(targetName string, target *KotlinTestTarget, args language.GenerateArgs, result *language.GenerateResult) error {
 	// Check for name-collisions with the rule being generated.
-	colError := gazelle.CheckCollisionErrors(targetName, KtJvmTest, sourceRuleKinds, args)
+	colError := gazelle.CheckCollisionErrors(targetName, KtJvmTest, treeset.NewWithStringComparator(KtJvmTest), args)
 	if colError != nil {
 		return colError
 	}

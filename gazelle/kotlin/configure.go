@@ -2,6 +2,7 @@ package gazelle
 
 import (
 	"flag"
+	"fmt"
 
 	jvm_javaconfig "github.com/bazel-contrib/rules_jvm/java/gazelle/javaconfig"
 	jvm_maven "github.com/bazel-contrib/rules_jvm/java/gazelle/private/maven"
@@ -36,8 +37,14 @@ func (kc *kotlinLang) initRootConfig(c *config.Config) kotlinconfig.Configs {
 	return c.Exts[LanguageName].(kotlinconfig.Configs)
 }
 
+// Configure implements pare of the [config.Configurer] interface.
 func (kt *kotlinLang) Configure(c *config.Config, rel string, f *rule.File) {
-	BazelLog.Tracef("Configure(%s): %s", LanguageName, rel)
+	BazelLog.Tracef("Configure(%s): %s, %s", LanguageName, rel, func() string {
+		if f == nil {
+			return "no rule file"
+		}
+		return fmt.Sprintf("%s has %d directives: %v", f.File.Path, len(f.Directives), f.Directives)
+	}())
 
 	// Create the KotlinConfig for this package
 	cfgs := kt.initRootConfig(c)

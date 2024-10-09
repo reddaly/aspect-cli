@@ -1,8 +1,8 @@
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("//gazelle:gazelle.bzl", "gazelle_generation_test")
-load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_skylib//lib:sets.bzl", "sets")
 
 # Exclude all test data
 # gazelle:exclude tests/
@@ -29,7 +29,6 @@ go_library(
         "@com_github_bazel_contrib_rules_jvm//java/gazelle/private/java",
         "@com_github_bazel_contrib_rules_jvm//java/gazelle/private/maven",
         "@com_github_bazel_contrib_rules_jvm//java/gazelle/private/types",
-        "@com_github_emirpasic_gods//maps/treemap",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_rs_zerolog//:zerolog",
         "@gazelle//config:go_default_library",
@@ -51,14 +50,12 @@ gazelle_binary(
 gazelle_binary(
     name = "gazelle_prod",
     languages = [
-      ":kotlin",
-      "@gazelle//language/go",
-      "@gazelle//language/proto",
+        ":kotlin",
+        "@gazelle//language/go",
+        "@gazelle//language/proto",
     ],
     visibility = ["//visibility:private"],
 )
-
-
 
 # A separate generation test for each tests/* test case
 [
